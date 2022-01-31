@@ -2,6 +2,9 @@ import expr
 from expr import Visitor, Expr
 
 class AstPrinter(Visitor):
+    def print(self, expr: Expr):
+        return expr.accept(self)
+    
     def visitBinaryExpr(self, expr: expr.Binary) -> str:
         return self._parenthesize(expr.operator.lexeme, expr.left, expr.right)
 
