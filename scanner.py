@@ -80,7 +80,7 @@ class Scanner:
             pass
         elif '\n':
             self.line += 1
-        else: Lox.error(self.line, 'Unexpected character.')
+        else: Lox.error_line(self.line, 'Unexpected character.')
             
         
     def is_at_end(self) -> bool:
@@ -120,7 +120,7 @@ class Scanner:
             self.advance()
 
         if self.is_at_end():
-            Lox.error(self.line, 'Unterminated string.')
+            Lox.error_line(self.line, 'Unterminated string.')
             return
         
         self.advance()
@@ -145,7 +145,7 @@ class Scanner:
             self.advance()
             while self.is_digit(self.peek()):
                 self.advance()
-        self.add_token(TokenType.NUMBER, self.source[self.start:self.current])
+        self.add_token(TokenType.NUMBER, float(self.source[self.start:self.current]))
 
     def identifier(self):
         while self.is_alpha_number(self.peek()):

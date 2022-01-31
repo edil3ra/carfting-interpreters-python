@@ -21,7 +21,6 @@ class Parser:
             return Literal('error')
     
     def expression(self):
-        import pudb; pudb.set_trace()
         return self.equality()
 
     def equality(self) -> Expr:

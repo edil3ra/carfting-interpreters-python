@@ -2,13 +2,16 @@ import sys
 from tokens import Token
 from token_type import TokenType
 from ast_printer import AstPrinter
-
+from runtimeerror import RuntimeError
 
 class Lox:
     has_error = False
+    has_runtime_error = False
 
     @classmethod
     def main(cls):
+        cls.interpreter = Interpreter()
+        
         if len(sys.argv) == 1:
             cls.run_prompt()
         elif len(sys.argv) == 2:
@@ -30,18 +33,30 @@ class Lox:
             if len(line) == 0:
                 return
             cls.run(line)
-            hadError = False
+            cls.has_error = False
 
     @classmethod
     def run(cls, source: str):
-        from scanner import Scanner
-        from parsers import Parser
         scanner = Scanner(source)
         tokens = scanner.scan_tokens()
         expression = Parser(tokens).parse()
+        expression.accept(AstPrinter())
+        print(cls.interpreter.interpret(expression))
         print(AstPrinter().print(expression))
+        
+        if (cls.has_error):
+            sys.exit(65)
 
 
+    @classmethod
+    def runtime_error(cls, error: RuntimeError):
+        print(f'{error.message}\n[line {error.token.line}]')
+        cls.has_runtime_error = True
+
+    @classmethod
+    def error_line(cls, line: int, message: str):
+        self.report(line, "", message)
+        
     @classmethod
     def error(cls, token: Token, message: str):
         if token.type == TokenType.EOF:
@@ -53,3 +68,8 @@ class Lox:
     def report(cls, line: int, where: str, message: str):
         print(f'[line {line}] Error {where} : {message}', file=sys.stderr)
         cls.has_error = True
+
+
+from scanner import Scanner
+from parsers import Parser
+from interpreter import Interpreter
