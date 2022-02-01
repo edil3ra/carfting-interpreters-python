@@ -5,9 +5,13 @@ import stmt
 from token_type import TokenType
 from tokens import Token
 from runtimeerror import RuntimeError
-
+from environment import Environment
 
 class Interpreter(expr.Visitor, stmt.Visitor):
+    environment: Environment
+    def __init__(self):
+        self.environment = Environment()
+        
     def interpret(self, statements: List[stmt.Stmt]):
         try:
             for statement in statements:
@@ -74,6 +78,9 @@ class Interpreter(expr.Visitor, stmt.Visitor):
     def visit_literal_expr(self, expr: expr.Literal) -> object:
         return expr.value
 
+    def visit_variable_expr(self, expr: expr.Variable) -> object:
+        return self.environment.get(expr.name)
+
     def visit_unary_expr(self, expr: expr.Unary) -> object:
         right = self.evaluate(expr.right)
         self.check_number_operand(expr.operator, right)
@@ -91,6 +98,13 @@ class Interpreter(expr.Visitor, stmt.Visitor):
         value = self.evaluate(stmt.expression)
         print(value)
         return None
+
+    def visit_var_stmt(self, stmt: stmt.Var) -> None:
+        value = None
+        if stmt.initializer:
+            value = self.evaluate(stmt.initializer)
+        self.environment.define(stmt.name.lexeme, value)
+    
     
     def is_true(self, obj: object) -> bool:
         if obj is None:
