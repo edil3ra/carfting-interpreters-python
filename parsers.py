@@ -1,6 +1,7 @@
 from tokens import Token
 from token_type import TokenType
 from expr import *
+from stmt import *
 from typing import List
 from lox import Lox
 
@@ -12,13 +13,28 @@ class Parser:
     def __init__(self, tokens: List[Token]):
         self.tokens = tokens
         self.current = 0
-    
-    def parse(self ) -> Expr:
-        try:
-            return self.expression()
-        except ParseError:
-            print('error')
-            return Literal('error')
+
+    def parse(self) -> List[Stmt]:
+        statements = []
+        while not self.is_at_end():
+            statements.append(self.statement())
+        return statements
+
+
+    def statement(self):
+        if self.match(TokenType.PRINT):
+            return self.print_statement()
+        return self.expression_statement()
+
+    def print_statement(self):
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, 'Except ";" after value')
+        return Print(value)
+
+    def expression_statement(self):
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, 'Except ";" after value')
+        return Expression(value)
     
     def expression(self):
         return self.equality()

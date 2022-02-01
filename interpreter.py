@@ -1,24 +1,27 @@
-from typing import cast, Any
+from typing import cast, Any, List
 from lox import Lox
 import expr
-from expr import Visitor, Expr
+import stmt
 from token_type import TokenType
 from tokens import Token
 from runtimeerror import RuntimeError
 
 
-class Interpreter(Visitor):
-    def interpret(self, expr: Expr):
+class Interpreter(expr.Visitor, stmt.Visitor):
+    def interpret(self, statements: List[stmt.Stmt]):
         try:
-            value = self.evaluate(expr)
-            return value
+            for statement in statements:
+                self.execute(statement)
         except(RuntimeError) as e:
             Lox.runtime_error(e)
-        
-    def evaluate(self, expr: Expr) -> object:
+
+    def execute(self, stmt: stmt.Stmt):
+        stmt.accept(self)
+            
+    def evaluate(self, expr: expr.Expr) -> object:
         return expr.accept(self)
     
-    def visitBinaryExpr(self, expr: expr.Binary) -> object:
+    def visit_binary_expr(self, expr: expr.Binary) -> object:
         left: Any  = self.evaluate(expr.left)
         right: Any = self.evaluate(expr.right)
 
@@ -65,13 +68,13 @@ class Interpreter(Visitor):
         elif expr.operator.type == TokenType.BANG_EQUAL:
             return left != right
 
-    def visitGroupingExpr(self, expr: expr.Grouping) -> object:
+    def visit_grouping_expr(self, expr: expr.Grouping) -> object:
         return self.evaluate(expr.expression)
 
-    def visitLiteralExpr(self, expr: expr.Literal) -> object:
+    def visit_literal_expr(self, expr: expr.Literal) -> object:
         return expr.value
 
-    def visitUnaryExpr(self, expr: expr.Unary) -> object:
+    def visit_unary_expr(self, expr: expr.Unary) -> object:
         right = self.evaluate(expr.right)
         self.check_number_operand(expr.operator, right)
         if expr.operator.type == TokenType.MINUS:
@@ -79,6 +82,15 @@ class Interpreter(Visitor):
 
         elif expr.operator.type == TokenType.BANG:
             return not right
+
+    def visit_expression_stmt(self, stmt: stmt.Expression) -> None:
+        self.evaluate(stmt.expression)
+        return None
+
+    def visit_print_stmt(self, stmt: stmt.Print) -> None:
+        value = self.evaluate(stmt.expression)
+        print(value)
+        return None
     
     def is_true(self, obj: object) -> bool:
         if obj is None:

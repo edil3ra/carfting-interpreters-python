@@ -39,14 +39,13 @@ class Lox:
     def run(cls, source: str):
         scanner = Scanner(source)
         tokens = scanner.scan_tokens()
-        expression = Parser(tokens).parse()
-        expression.accept(AstPrinter())
-        print(cls.interpreter.interpret(expression))
-        print(AstPrinter().print(expression))
+        statements = Parser(tokens).parse()
+        cls.interpreter.interpret(statements)
+
+        print('\n'.join(AstPrinter().print_statements(statements)))
         
         if (cls.has_error):
             sys.exit(65)
-
 
     @classmethod
     def runtime_error(cls, error: RuntimeError):
@@ -55,7 +54,7 @@ class Lox:
 
     @classmethod
     def error_line(cls, line: int, message: str):
-        self.report(line, "", message)
+        cls.report(line, "", message)
         
     @classmethod
     def error(cls, token: Token, message: str):

@@ -9,19 +9,19 @@ T = TypeVar('T')
 
 class Visitor(ABC, Generic[T]):
     @abstractmethod
-    def visitBinaryExpr(self, expr: Binary) -> T:
+    def visit_binary_expr(self, expr: Binary) -> T:
         pass
 
     @abstractmethod
-    def visitGroupingExpr(self, expr: Grouping) -> T:
+    def visit_grouping_expr(self, expr: Grouping) -> T:
         pass
 
     @abstractmethod
-    def visitLiteralExpr(self, expr: Literal) -> T:
+    def visit_literal_expr(self, expr: Literal) -> T:
         pass
 
     @abstractmethod
-    def visitUnaryExpr(self, expr: Unary) -> T:
+    def visit_unary_expr(self, expr: Unary) -> T:
         pass
         
 
@@ -38,14 +38,14 @@ class Binary(Expr):
     right: Expr
         
     def accept(self, visitor:Visitor):
-        return visitor.visitBinaryExpr(self)
+        return visitor.visit_binary_expr(self)
 
 @dataclass
 class Grouping(Expr):
     expression: Expr
     
     def accept(self, visitor:Visitor):
-        return visitor.visitGroupingExpr(self)
+        return visitor.visit_grouping_expr(self)
 
 
 @dataclass
@@ -53,7 +53,7 @@ class Literal(Expr):
     value: object
     
     def accept(self, visitor:Visitor):
-        return visitor.visitLiteralExpr(self)
+        return visitor.visit_literal_expr(self)
 
 
 @dataclass
@@ -62,4 +62,4 @@ class Unary(Expr):
     right: Expr
         
     def accept(self, visitor:Visitor):
-        return visitor.visitUnaryExpr(self)
+        return visitor.visit_unary_expr(self)
