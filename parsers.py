@@ -17,10 +17,29 @@ class Parser:
     def parse(self) -> List[Stmt]:
         statements = []
         while not self.is_at_end():
-            statements.append(self.statement())
+            # statements.append(self.statement())
+            statements.append(self.declaration())
         return statements
 
 
+    def declaration(self):
+        try:
+            if self.match(TokenType.VAR):
+                return self.var_declaration()
+            return self.statement()
+        except(ParseError):
+            self.synchronize()
+            return None
+
+        
+    def var_declaration(self):
+        name = self.consume(TokenType.IDENTIFIER, 'Except variable name.')
+        initializer = None
+        if self.match(TokenType.EQUAL):
+            initializer = self.expression()
+        self.consume(TokenType.SEMICOLON, 'Except ";" after variable declaration.')
+        return Var(name, initializer)
+        
     def statement(self):
         if self.match(TokenType.PRINT):
             return self.print_statement()
@@ -28,12 +47,12 @@ class Parser:
 
     def print_statement(self):
         value = self.expression()
-        self.consume(TokenType.SEMICOLON, 'Except ";" after value')
+        self.consume(TokenType.SEMICOLON, 'Except ";" after value.')
         return Print(value)
 
     def expression_statement(self):
         value = self.expression()
-        self.consume(TokenType.SEMICOLON, 'Except ";" after value')
+        self.consume(TokenType.SEMICOLON, 'Except ";" after value.')
         return Expression(value)
     
     def expression(self):
@@ -89,6 +108,9 @@ class Parser:
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self.previous().literal)
 
+        if self.match(TokenType.IDENTIFIER):
+            return Variable(self.previous())
+        
         if self.match(TokenType.LEFT_PAREN):
             expr = self.expression()
             self.consume(TokenType.RIGHT_PAREN, "Except ')' after expression.")
