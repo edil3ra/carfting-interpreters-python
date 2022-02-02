@@ -59,7 +59,7 @@ class Scanner:
         elif c == '!':
             self.add_token(TokenType.BANG_EQUAL if self.match('=') else TokenType.BANG)
         elif c == '=':
-            self.add_token(TokenType.EQUAL if self.match('=') else TokenType.EQUAL_EQUAL)
+            self.add_token(TokenType.EQUAL_EQUAL if self.match('=') else TokenType.EQUAL)
         elif c == '<':
             self.add_token(TokenType.LESS_EQUAL if self.match('=') else TokenType.LESS)
         elif c == '>':
@@ -70,6 +70,8 @@ class Scanner:
                     self.advance()
             else:
                 self.add_token(TokenType.SLASH)
+        elif c == ';':
+            self.add_token(TokenType.SEMICOLON)
         elif c == '"':
             self.string()
         elif self.is_digit(c):

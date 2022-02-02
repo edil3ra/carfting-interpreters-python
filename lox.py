@@ -15,7 +15,7 @@ class Lox:
         if len(sys.argv) == 1:
             cls.run_prompt()
         elif len(sys.argv) == 2:
-            cls.run_file(sys.argv[0])
+            cls.run_file(sys.argv[1])
         else:
             print('Usage: jlox [script]')
             sys.exit(0)
@@ -37,12 +37,12 @@ class Lox:
 
     @classmethod
     def run(cls, source: str):
-        scanner = Scanner(source)
+        scanner = Scanner(source.strip())
         tokens = scanner.scan_tokens()
         statements = Parser(tokens).parse()
         cls.interpreter.interpret(statements)
 
-        print('\n'.join(AstPrinter().print_statements(statements)))
+        # print('\n'.join(AstPrinter().print_statements(statements)))
         
         if (cls.has_error):
             sys.exit(65)

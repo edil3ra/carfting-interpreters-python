@@ -60,7 +60,7 @@ class Parser:
         if self.match(TokenType.EQUAL):
             equals = self.previous()
             value = self.assignment()
-            if expr is Variable:
+            if type(expr) is Variable:
                 name = cast(Variable, expr).name
                 return Assign(name, value)
             self.error(equals, "invalid assignment target.")
