@@ -90,6 +90,11 @@ class Interpreter(expr.Visitor, stmt.Visitor):
         elif expr.operator.type == TokenType.BANG:
             return not right
 
+    def visit_assign_expr(self, expr: expr.Assign) -> object:
+        value = self.evaluate(expr.value)
+        self.environment.assign(expr.name, value)
+        return value
+
     def visit_expression_stmt(self, stmt: stmt.Expression) -> None:
         self.evaluate(stmt.expression)
         return None
@@ -104,7 +109,6 @@ class Interpreter(expr.Visitor, stmt.Visitor):
         if stmt.initializer:
             value = self.evaluate(stmt.initializer)
         self.environment.define(stmt.name.lexeme, value)
-    
     
     def is_true(self, obj: object) -> bool:
         if obj is None:

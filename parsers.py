@@ -2,7 +2,7 @@ from tokens import Token
 from token_type import TokenType
 from expr import *
 from stmt import *
-from typing import List
+from typing import List, cast
 from lox import Lox
 
 class ParseError(Exception):
@@ -17,12 +17,10 @@ class Parser:
     def parse(self) -> List[Stmt]:
         statements = []
         while not self.is_at_end():
-            # statements.append(self.statement())
             statements.append(self.declaration())
         return statements
 
-
-    def declaration(self):
+    def declaration(self) -> Stmt | Expr | None:
         try:
             if self.match(TokenType.VAR):
                 return self.var_declaration()
@@ -31,8 +29,7 @@ class Parser:
             self.synchronize()
             return None
 
-        
-    def var_declaration(self):
+    def var_declaration(self) -> Stmt:
         name = self.consume(TokenType.IDENTIFIER, 'Except variable name.')
         initializer = None
         if self.match(TokenType.EQUAL):
@@ -40,24 +37,36 @@ class Parser:
         self.consume(TokenType.SEMICOLON, 'Except ";" after variable declaration.')
         return Var(name, initializer)
         
-    def statement(self):
+    def statement(self) -> Stmt:
         if self.match(TokenType.PRINT):
             return self.print_statement()
         return self.expression_statement()
 
-    def print_statement(self):
+    def print_statement(self) -> Stmt:
         value = self.expression()
         self.consume(TokenType.SEMICOLON, 'Except ";" after value.')
         return Print(value)
 
-    def expression_statement(self):
+    def expression_statement(self) -> Stmt:
         value = self.expression()
         self.consume(TokenType.SEMICOLON, 'Except ";" after value.')
         return Expression(value)
     
     def expression(self):
-        return self.equality()
+        return self.assignment()
 
+    def assignment(self) -> Expr:
+        expr = self.equality()
+        if self.match(TokenType.EQUAL):
+            equals = self.previous()
+            value = self.assignment()
+            if expr is Variable:
+                name = cast(Variable, expr).name
+                return Assign(name, value)
+            self.error(equals, "invalid assignment target.")
+        return expr
+            
+    
     def equality(self) -> Expr:
         expr = self.comparison()
         while self.match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL):

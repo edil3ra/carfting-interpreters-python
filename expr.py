@@ -28,6 +28,10 @@ class Visitor(ABC, Generic[T]):
     def visit_variable_expr(self, expr: Variable) -> T:
         pass
 
+    @abstractmethod
+    def visit_assign_expr(self, expr: Assign) -> T:
+        pass
+
 
 class Expr(ABC):
     @abstractmethod
@@ -77,3 +81,11 @@ class Variable(Expr):
         return visitor.visit_variable_expr(self)
 
     
+@dataclass
+class Assign(Expr):
+    name: Token
+    value: Expr
+
+    def accept(self, visitor:Visitor):
+        return visitor.visit_assign_expr(self)
+
