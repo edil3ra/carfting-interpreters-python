@@ -50,7 +50,6 @@ class Interpreter(expr.Visitor, stmt.Visitor):
                 return float(left) + float(right)
             
             elif type(left) is str and type(right) is str:
-                import pdb; pdb.set_trace()
                 return left + right
             raise RuntimeError(expr.operator, 'Operands must be two numbers or two strings.')
 

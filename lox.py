@@ -42,8 +42,6 @@ class Lox:
         statements = Parser(tokens).parse()
         cls.interpreter.interpret(statements)
 
-        # print('\n'.join(AstPrinter().print_statements(statements)))
-        
         if (cls.has_error):
             sys.exit(65)
 
