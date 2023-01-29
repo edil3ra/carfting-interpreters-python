@@ -15,7 +15,7 @@ def test_expr():
             expr.Literal(45.67)
         )
     )
-    return expression.accept(AstPrinter())
+    return AstPrinter().print(expression)
 
 if __name__ == '__main__':
     lox = Lox()
