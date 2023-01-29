@@ -84,7 +84,6 @@ class Scanner:
             self.line += 1
         else: Lox.error_line(self.line, 'Unexpected character.')
             
-        
     def is_at_end(self) -> bool:
         return self.current >= len(self.source)
 
@@ -110,7 +109,6 @@ class Scanner:
             return '\0'
         return self.source[self.current + 1]
     
-    
     def add_token(self, type: TokenType, literal=None):
         text = self.source[self.start:self.current]
         self.tokens.append(Token(type, text, literal, self.line))
@@ -134,7 +132,7 @@ class Scanner:
         return c in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
     def is_alpha(_self, c: str) -> bool:
-        return ('a' <= c <= 'z') or ('A' <= c <='Z')
+        return ('a' <= c <= 'z') or ('A' <= c <='Z') or  c == '_'
 
     def is_alpha_number(self, c: str):
         return self.is_digit(c) or self.is_alpha(c)
