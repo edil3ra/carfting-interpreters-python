@@ -5,11 +5,15 @@ from stmt import *
 from typing import List, cast
 from lox import Lox
 
+
 class ParseError(Exception):
     pass
-    
+
 
 class Parser:
+    tokens: List[Token]
+    current: int
+
     def __init__(self, tokens: List[Token]):
         self.tokens = tokens
         self.current = 0
@@ -25,18 +29,18 @@ class Parser:
             if self.match(TokenType.VAR):
                 return self.var_declaration()
             return self.statement()
-        except(ParseError):
+        except (ParseError):
             self.synchronize()
             return None
 
     def var_declaration(self) -> Stmt:
-        name = self.consume(TokenType.IDENTIFIER, 'Except variable name.')
+        name = self.consume(TokenType.IDENTIFIER, "Except variable name.")
         initializer = None
         if self.match(TokenType.EQUAL):
             initializer = self.expression()
         self.consume(TokenType.SEMICOLON, 'Except ";" after variable declaration.')
         return Var(name, initializer)
-        
+
     def statement(self) -> Stmt:
         if self.match(TokenType.PRINT):
             return self.print_statement()
@@ -51,7 +55,7 @@ class Parser:
         value = self.expression()
         self.consume(TokenType.SEMICOLON, 'Except ";" after value.')
         return Expression(value)
-    
+
     def expression(self):
         return self.assignment()
 
@@ -65,8 +69,7 @@ class Parser:
                 return Assign(name, value)
             self.error(equals, "invalid assignment target.")
         return expr
-            
-    
+
     def equality(self) -> Expr:
         expr = self.comparison()
         while self.match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL):
@@ -78,8 +81,10 @@ class Parser:
     def comparison(self) -> Expr:
         expr = self.term()
         while self.match(
-                TokenType.GREATER, TokenType.GREATER_EQUAL,
-                TokenType.LESS, TokenType.LESS_EQUAL,
+            TokenType.GREATER,
+            TokenType.GREATER_EQUAL,
+            TokenType.LESS,
+            TokenType.LESS_EQUAL,
         ):
             operator = self.previous()
             right = self.term()
@@ -101,7 +106,7 @@ class Parser:
             right = self.unary()
             expr = Binary(expr, operator, right)
         return expr
-    
+
     def unary(self) -> Expr:
         if self.match(TokenType.BANG, TokenType.MINUS):
             operator = self.previous()
@@ -110,21 +115,24 @@ class Parser:
         return self.primary()
 
     def primary(self) -> Expr:
-        if self.match(TokenType.FALSE): return Literal(False)
-        if self.match(TokenType.TRUE): return Literal(True)
-        if self.match(TokenType.NIL): return Literal(None)
-        
+        if self.match(TokenType.FALSE):
+            return Literal(False)
+        if self.match(TokenType.TRUE):
+            return Literal(True)
+        if self.match(TokenType.NIL):
+            return Literal(None)
+
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self.previous().literal)
 
         if self.match(TokenType.IDENTIFIER):
             return Variable(self.previous())
-        
+
         if self.match(TokenType.LEFT_PAREN):
             expr = self.expression()
             self.consume(TokenType.RIGHT_PAREN, "Except ')' after expression.")
             return Grouping(expr)
-        raise self.error(self.peek(), 'Except expression.')
+        raise self.error(self.peek(), "Except expression.")
 
     def match(self, *tokens) -> bool:
         for token_type in tokens:
@@ -144,17 +152,17 @@ class Parser:
         return self.previous()
 
     def consume(self, token: TokenType, message: str):
-        if (self.check(token)):
+        if self.check(token):
             return self.advance()
         self.error(self.peek(), message)
 
     def error(self, token: Token, message: str):
         Lox.error(token, message)
         return ParseError()
-        
+
     def is_at_end(self):
         return self.peek().type == TokenType.EOF
-    
+
     def peek(self) -> Token:
         return self.tokens[self.current]
 
@@ -168,14 +176,14 @@ class Parser:
                 return
 
             if self.peek().type in [
-                    TokenType.CLASS,
-                    TokenType.FUN,
-                    TokenType.VAR,
-                    TokenType.FOR,
-                    TokenType.IF,
-                    TokenType.WHILE,
-                    TokenType.PRINT,
-                    TokenType.RETURN,
+                TokenType.CLASS,
+                TokenType.FUN,
+                TokenType.VAR,
+                TokenType.FOR,
+                TokenType.IF,
+                TokenType.WHILE,
+                TokenType.PRINT,
+                TokenType.RETURN,
             ]:
                 return
             self.advance()
