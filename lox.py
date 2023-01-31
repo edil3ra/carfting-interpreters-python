@@ -1,8 +1,10 @@
 import sys
-from tokens import Token
-from token_type import TokenType
+
 from ast_printer import AstPrinter
 from runtimeerror import RuntimeError
+from token_type import TokenType
+from tokens import Token
+
 
 class Lox:
     has_error = False
@@ -11,24 +13,35 @@ class Lox:
     @classmethod
     def main(cls):
         cls.interpreter = Interpreter()
-        
+
         if len(sys.argv) == 1:
             cls.run_prompt()
         elif len(sys.argv) == 2:
             cls.run_file(sys.argv[1])
+        elif len(sys.argv) == 3 and sys.argv[2] == "printer":
+            cls.printer(sys.argv[1])
         else:
-            print('Usage: jlox [script]')
+            print("Usage: jlox [script]")
             sys.exit(0)
 
     @classmethod
+    def printer(cls, path: str) -> str:
+        source = open(path, "r").read()
+        scanner = Scanner(source.strip())
+        tokens = scanner.scan_tokens()
+        statements = Parser(tokens).parse()
+        statements_print = AstPrinter().print_statements(statements)
+        print('\n'.join(statements_print))
+
+    @classmethod
     def run_file(cls, path: str):
-        source = open(path, 'r').read()
+        source = open(path, "r").read()
         cls.run(source)
 
     @classmethod
     def run_prompt(cls):
         while True:
-            print('> ', end='')
+            print("> ", end="")
             line = input()
             if len(line) == 0:
                 return
@@ -42,18 +55,18 @@ class Lox:
         statements = Parser(tokens).parse()
         cls.interpreter.interpret(statements)
 
-        if (cls.has_error):
+        if cls.has_error:
             sys.exit(65)
 
     @classmethod
     def runtime_error(cls, error: RuntimeError):
-        print(f'{error.message}\n[line {error.token.line}]')
+        print(f"{error.message}\n[line {error.token.line}]")
         cls.has_runtime_error = True
 
     @classmethod
     def error_line(cls, line: int, message: str):
         cls.report(line, "", message)
-        
+
     @classmethod
     def error(cls, token: Token, message: str):
         if token.type == TokenType.EOF:
@@ -63,7 +76,7 @@ class Lox:
 
     @classmethod
     def report(cls, line: int, where: str, message: str):
-        print(f'[line {line}] Error {where} : {message}', file=sys.stderr)
+        print(f"[line {line}] Error {where} : {message}", file=sys.stderr)
         cls.has_error = True
 
 

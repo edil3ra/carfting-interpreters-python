@@ -1,9 +1,11 @@
-from tokens import Token
-from token_type import TokenType
+from typing import cast
+from typing import List
+
 from expr import *
-from stmt import *
-from typing import List, cast
 from lox import Lox
+from stmt import *
+from token_type import TokenType
+from tokens import Token
 
 
 class ParseError(Exception):
@@ -44,7 +46,17 @@ class Parser:
     def statement(self) -> Stmt:
         if self.match(TokenType.PRINT):
             return self.print_statement()
+        if self.match(TokenType.LEFT_BRACE):
+            statements = self.block()
+            return Block(statements)
         return self.expression_statement()
+
+    def block(self) -> List[Stmt]:
+        statements = []
+        while not self.check(TokenType.RIGHT_BRACE) and not self.is_at_end():
+            statements.append(self.declaration())
+        self.consume(TokenType.RIGHT_BRACE, 'Except "}" after block.')
+        return statements
 
     def print_statement(self) -> Stmt:
         value = self.expression()

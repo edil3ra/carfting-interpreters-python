@@ -4,7 +4,7 @@ from runtimeerror import RuntimeError
 
 class Environment:
     values: Dict
-    enclosing: Environment
+    enclosing: "Environment"
 
     def __init__(self):
         self.enclosing = None
