@@ -46,6 +46,13 @@ class Interpreter(stmt.Visitor, expr.Visitor):
     def visit_block_stmt(self, stmt: stmt.Block):
         self.execute_block(stmt.statements, Environment())
 
+    def visit_if_stmt(self, stmt: stmt.If) -> None:
+        if self.is_true(self.evaluate(stmt.condition)):
+            self.execute(stmt.then_branch)
+        else:
+            self.execute(stmt.else_branch)
+        return None
+
     def visit_print_stmt(self, stmt: stmt.Print) -> None:
         value = self.evaluate(stmt.expression)
         print(value)

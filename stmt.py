@@ -29,6 +29,10 @@ class Visitor(ABC, Generic[T]):
     def visit_var_stmt(self, stmt: Var):
         pass
 
+    @abstractmethod
+    def visit_if_stmt(self, stmt: If):
+        pass
+
 
 class Stmt(ABC):
     @abstractmethod
@@ -67,3 +71,13 @@ class Var(Stmt):
 
     def accept(self, visitor: Visitor):
         return visitor.visit_var_stmt(self)
+
+
+@dataclass
+class If(Stmt):
+    condition: Expr
+    then_branch: Stmt
+    else_branch: Stmt | None
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_if_stmt(self)

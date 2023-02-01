@@ -44,12 +44,25 @@ class Parser:
         return Var(name, initializer)
 
     def statement(self) -> Stmt:
+        if self.match(TokenType.IF):
+            return self.if_statement()
         if self.match(TokenType.PRINT):
             return self.print_statement()
         if self.match(TokenType.LEFT_BRACE):
             statements = self.block()
             return Block(statements)
         return self.expression_statement()
+
+    def if_statement(self) -> Stmt:
+        self.consume(TokenType.LEFT_PAREN, "Excepct '( after 'if'.")
+        condition = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Excepct ') after if condition.")
+
+        then_branch = self.statement()
+        else_branch = None
+        if self.match(TokenType.ELSE):
+            else_branch = self.statement()
+        return If(condition, then_branch, else_branch)
 
     def block(self) -> List[Stmt]:
         statements = []
