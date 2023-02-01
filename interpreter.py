@@ -113,6 +113,16 @@ class Interpreter(stmt.Visitor, expr.Visitor):
         elif expr.operator.type == TokenType.BANG_EQUAL:
             return left != right
 
+    def visit_logical_expr(self, expr: expr.Logical) -> T:
+        left = self.evaluate(expr.left)
+        if expr.operator == TokenType.OR:
+            if self.is_true(left):
+                return left
+        elif expr.operator == TokenType.AND:
+            if not self.is_true(left):
+                return left
+        return self.evaluate(expr.right)
+
     def visit_grouping_expr(self, expr: expr.Grouping) -> object:
         return self.evaluate(expr.expression)
 
