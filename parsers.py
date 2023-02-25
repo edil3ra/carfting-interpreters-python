@@ -48,6 +48,8 @@ class Parser:
             return self.if_statement()
         if self.match(TokenType.PRINT):
             return self.print_statement()
+        if self.match(TokenType.WHILE):
+            return self.while_statement()
         if self.match(TokenType.LEFT_BRACE):
             statements = self.block()
             return Block(statements)
@@ -63,6 +65,13 @@ class Parser:
         if self.match(TokenType.ELSE):
             else_branch = self.statement()
         return If(condition, then_branch, else_branch)
+
+    def while_statement(self) -> Stmt:
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.")
+        condition = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Except ')' after condition.")
+        body = self.statement()
+        return While(condition, body)
 
     def block(self) -> List[Stmt]:
         statements = []
@@ -107,7 +116,7 @@ class Parser:
         expr = self.equality()
         while self.match(TokenType.AND):
             operator = self.previous()
-            right = self._equality()
+            right = self.equality()
             expr = Logical(expr, operator, right)
         return expr
 

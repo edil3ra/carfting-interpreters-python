@@ -44,13 +44,19 @@ class Interpreter(stmt.Visitor, expr.Visitor):
         return None
 
     def visit_block_stmt(self, stmt: stmt.Block):
-        self.execute_block(stmt.statements, Environment())
+        self.execute_block(stmt.statements, Environment(self.environment))
 
     def visit_if_stmt(self, stmt: stmt.If) -> None:
         if self.is_true(self.evaluate(stmt.condition)):
             self.execute(stmt.then_branch)
-        else:
+        elif stmt.else_branch is not None:
             self.execute(stmt.else_branch)
+        return None
+
+    def visit_while_stmt(self, stmt: stmt.While) -> None:
+        while self.is_true(self.evaluate(stmt.condition)):
+            self.execute(stmt.body)
+
         return None
 
     def visit_print_stmt(self, stmt: stmt.Print) -> None:
@@ -113,7 +119,7 @@ class Interpreter(stmt.Visitor, expr.Visitor):
         elif expr.operator.type == TokenType.BANG_EQUAL:
             return left != right
 
-    def visit_logical_expr(self, expr: expr.Logical) -> T:
+    def visit_logical_expr(self, expr: expr.Logical) -> object:
         left = self.evaluate(expr.left)
         if expr.operator == TokenType.OR:
             if self.is_true(left):
@@ -148,10 +154,8 @@ class Interpreter(stmt.Visitor, expr.Visitor):
 
     def is_true(self, obj: object) -> bool:
         if obj is None:
-            return True
-        if obj is type(bool):
-            return cast(bool, obj)
-        return True
+            return False
+        return bool(obj)
 
     def check_number_operand(self, operator: Token, operand: object):
         if type(operand) is not float or type(operand) is not int:

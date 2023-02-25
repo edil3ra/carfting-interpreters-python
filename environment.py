@@ -6,8 +6,8 @@ class Environment:
     values: Dict
     enclosing: "Environment"
 
-    def __init__(self):
-        self.enclosing = None
+    def __init__(self, enclosing = None):
+        self.enclosing = enclosing
         self.values = {}
 
     def define(self, name: str, value: Any):

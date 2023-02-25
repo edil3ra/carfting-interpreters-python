@@ -33,6 +33,10 @@ class Visitor(ABC, Generic[T]):
     def visit_if_stmt(self, stmt: If):
         pass
 
+    @abstractmethod
+    def visit_while_stmt(self, stmt: While):
+        pass
+
 
 class Stmt(ABC):
     @abstractmethod
@@ -41,7 +45,7 @@ class Stmt(ABC):
 
 
 @dataclass
-class Block(ABC):
+class Block(Stmt):
     statements: List[Stmt]
 
     def accept(self, visitor: Visitor):
@@ -81,3 +85,11 @@ class If(Stmt):
 
     def accept(self, visitor: Visitor):
         return visitor.visit_if_stmt(self)
+
+@dataclass
+class While(Stmt):
+    condition: Expr
+    body: Stmt
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_while_stmt(self)
