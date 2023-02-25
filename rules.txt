@@ -1,6 +1,9 @@
-expression → assignment;
-assignment → IDENTIFIER "=" assignment
-           | equality ;
+# EXPRESSION
+expression   → assignment;
+assignment   → IDENTIFIER "=" assignment
+             | logic_or ;
+logic_or     → logic_and ("or" logic_and)* ;
+logic_and    → equality ("or" equality)* ;
 equality     → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison   → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term         → factor ( ( "-" | "+" ) factor )* ;
@@ -12,4 +15,14 @@ primary      → NUMBER | STRING | "true" | "false" | "nil"
 
 
 
+# STATEMENT
+statement    → exprStmt
+             | ifStmt
+             | printStmt
+             | whileStmt
+             | block;
 
+ifStmt       → "if" "( expression ") statement
+             ( "else" statement)? ;
+
+whileStmt    → "while" "(" expression ")" statement;
