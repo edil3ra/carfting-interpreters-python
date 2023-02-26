@@ -44,6 +44,8 @@ class Parser:
         return Var(name, initializer)
 
     def statement(self) -> Stmt:
+        if self.match(TokenType.FOR):
+            return self.for_statement()
         if self.match(TokenType.IF):
             return self.if_statement()
         if self.match(TokenType.PRINT):
@@ -54,6 +56,39 @@ class Parser:
             statements = self.block()
             return Block(statements)
         return self.expression_statement()
+
+    def for_statement(self) -> Stmt:
+        self.consume(TokenType.LEFT_PAREN, "Except '(' at the beggining of for.")
+
+        if self.match(TokenType.SEMICOLON):
+            initializer = None
+        elif self.match(TokenType.VAR):
+            initializer = self.var_declaration()
+        else:
+            initializer = self.expression()
+
+        condition = None
+        if not self.check(TokenType.SEMICOLON):
+            condition = self.expression()
+        self.consume(TokenType.SEMICOLON, "Except ';' after loop condition.")
+
+        increment = None
+        if not self.check(TokenType.SEMICOLON):
+            increment = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Except ')' after loop condition.")
+
+        body = self.statement()
+
+        if increment is not None:
+            body = Block([body, increment])
+
+        if condition is None:
+            condition = Literal(True)
+        body = While(condition, body)
+
+        if initializer is not None:
+            body = Block([initializer, body])
+        return body
 
     def if_statement(self) -> Stmt:
         self.consume(TokenType.LEFT_PAREN, "Excepct '( after 'if'.")
