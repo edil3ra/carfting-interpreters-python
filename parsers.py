@@ -197,7 +197,27 @@ class Parser:
             operator = self.previous()
             right = self.unary()
             return Unary(operator, right)
-        return self.primary()
+        return self.call()
+
+    def call(self) -> Expr:
+        expr = self.primary()
+        while True:
+            if self.match(TokenType.LEFT_PAREN):
+                expr = self.finish_call(expr)
+            else:
+                break
+        return expr
+
+    def finish_call(self, calee: Expr) -> Expr:
+        arguments: List[Expr] = []
+        if not self.check(TokenType.RIGHT_PAREN):
+            arguments.append(self.expression())
+            while self.match(TokenType.COMMA):
+                if len(arguments) >= 255:
+                    self.error(self.peek(), "Can't have more than 255 arguments.")
+                arguments.append(self.expression())
+        paren = self.consume(TokenType.RIGHT_PAREN, "Except ')' after arguments.")
+        return Call(calee, paren, arguments)
 
     def primary(self) -> Expr:
         if self.match(TokenType.FALSE):
@@ -239,11 +259,11 @@ class Parser:
     def consume(self, token: TokenType, message: str):
         if self.check(token):
             return self.advance()
-        self.error(self.peek(), message)
+        return self.error(self.peek(), message)
 
     def error(self, token: Token, message: str):
         Lox.error(token, message)
-        return ParseError()
+        raise ParseError()
 
     def is_at_end(self):
         return self.peek().type == TokenType.EOF

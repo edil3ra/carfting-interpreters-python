@@ -1,7 +1,7 @@
 from typing import Any
 from typing import cast
 from typing import List
-
+from loxCallable import LoxCallable
 import expr
 import stmt
 from environment import Environment
@@ -151,6 +151,21 @@ class Interpreter(stmt.Visitor, expr.Visitor):
         value = self.evaluate(expr.value)
         self.environment.assign(expr.name, value)
         return value
+
+    def visit_call_expr(self, expr: expr.Call) -> object:
+        calee = self.evaluate(expr.calee)
+        if not isinstance(calee, LoxCallable):
+            raise RuntimeError(expr.paren, "Can only call functions and classes.")
+        arguments = []
+        for argument in expr.arguments:
+            arguments.append(self.evaluate(argument))
+
+        function: LoxCallable = cast(LoxCallable, calee)
+
+        if len(arguments) != function.artiry():
+            raise RuntimeError(expr.paren, f'Expected {function.artiry()} arguments but got {len(arguments)} .')
+
+        return function.call(self, arguments)
 
     def is_true(self, obj: object) -> bool:
         if obj is None:

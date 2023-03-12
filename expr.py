@@ -5,6 +5,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Generic
 from typing import TypeVar
+from typing import List
 
 from tokens import Token
 
@@ -14,6 +15,10 @@ T = TypeVar("T")
 class Visitor(ABC, Generic[T]):
     @abstractmethod
     def visit_binary_expr(self, expr: Binary) -> T:
+        pass
+
+    @abstractmethod
+    def visit_call_expr(self, expr: Call) -> T:
         pass
 
     @abstractmethod
@@ -48,6 +53,15 @@ class Expr(ABC):
 
 
 @dataclass
+class Assign(Expr):
+    name: Token
+    value: Expr
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_assign_expr(self)
+
+
+@dataclass
 class Binary(Expr):
     left: Expr
     operator: Token
@@ -55,6 +69,16 @@ class Binary(Expr):
 
     def accept(self, visitor: Visitor):
         return visitor.visit_binary_expr(self)
+
+
+@dataclass
+class Call(Expr):
+    calee: Expr
+    paren: Token
+    arguments: List[Expr]
+
+    def accept(self, visitor: Visitor):
+        return visitor.visit_call_expr(self)
 
 
 @dataclass
@@ -98,12 +122,3 @@ class Variable(Expr):
 
     def accept(self, visitor: Visitor):
         return visitor.visit_variable_expr(self)
-
-
-@dataclass
-class Assign(Expr):
-    name: Token
-    value: Expr
-
-    def accept(self, visitor: Visitor):
-        return visitor.visit_assign_expr(self)
