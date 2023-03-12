@@ -9,6 +9,7 @@ from lox import Lox
 from runtimeerror import RuntimeError
 from token_type import TokenType
 from tokens import Token
+from native import getTime
 
 
 class Interpreter(stmt.Visitor, expr.Visitor):
@@ -16,6 +17,7 @@ class Interpreter(stmt.Visitor, expr.Visitor):
 
     def __init__(self):
         self.environment = Environment()
+        self.environment.define('clock', getTime(self.environment, getTime))
 
     def interpret(self, statements: List[stmt.Stmt]):
         try:

@@ -1,10 +1,11 @@
+import time
 from abc import ABC
 from typing import List
-
 from interpreter import Interpreter
+from loxCallable import LoxCallable
 
 
-class LoxCallable(ABC):
+class getTime(LoxCallable):
     def call(self, interpreter: Interpreter, argumens: List[object]):
         return time.time()
 
@@ -12,4 +13,4 @@ class LoxCallable(ABC):
         return 0
 
     def __str__(self) -> str:
-        return ''
+        return '<native fn>'
