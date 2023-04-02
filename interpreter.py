@@ -1,7 +1,7 @@
 from typing import Any
 from typing import cast
 from typing import List
-from loxCallable import LoxCallable
+from loxCallable import LoxCallable, LoxFunction
 import expr
 import stmt
 from environment import Environment
@@ -13,11 +13,11 @@ from native import get_time
 
 
 class Interpreter(stmt.Visitor, expr.Visitor):
-    environment: Environment
+    globals: Environment
 
     def __init__(self):
-        self.environment = Environment()
-        self.environment.define('clock', get_time)
+        self.globals = Environment()
+        self.globals.define('clock', get_time)
 
     def interpret(self, statements: List[stmt.Stmt]):
         try:
@@ -30,13 +30,13 @@ class Interpreter(stmt.Visitor, expr.Visitor):
         stmt.accept(self)
 
     def execute_block(self, statements: List[stmt.Stmt], environment: Environment):
-        previous = self.environment
+        previous = self.globals
         try:
-            self.environment = environment
+            self.globals = environment
             for statement in statements:
                 self.execute(statement)
         finally:
-            self.environment = previous
+            self.globals = previous
 
     def evaluate(self, expr: expr.Expr) -> object:
         return expr.accept(self)
@@ -46,7 +46,7 @@ class Interpreter(stmt.Visitor, expr.Visitor):
         return None
 
     def visit_block_stmt(self, stmt: stmt.Block):
-        self.execute_block(stmt.statements, Environment(self.environment))
+        self.execute_block(stmt.statements, Environment(self.globals))
 
     def visit_if_stmt(self, stmt: stmt.If) -> None:
         if self.is_true(self.evaluate(stmt.condition)):
@@ -70,7 +70,12 @@ class Interpreter(stmt.Visitor, expr.Visitor):
         value = None
         if stmt.initializer:
             value = self.evaluate(stmt.initializer)
-        self.environment.define(stmt.name.lexeme, value)
+        self.globals.define(stmt.name!.lexeme, value)
+
+    def visit_function_stmt(self, stmt: stmt.Function) -> None:
+        function = LoxFunction(stmt)
+        self.globals.define(stmt.name.lexeme, function)
+        
 
     def visit_binary_expr(self, expr: expr.Binary) -> object:
         left: Any = self.evaluate(expr.left)
@@ -138,7 +143,7 @@ class Interpreter(stmt.Visitor, expr.Visitor):
         return expr.value
 
     def visit_variable_expr(self, expr: expr.Variable) -> object:
-        return self.environment.get(expr.name)
+        return self.globals.get(expr.name)
 
     def visit_unary_expr(self, expr: expr.Unary) -> object:
         right = self.evaluate(expr.right)
@@ -151,7 +156,7 @@ class Interpreter(stmt.Visitor, expr.Visitor):
 
     def visit_assign_expr(self, expr: expr.Assign) -> object:
         value = self.evaluate(expr.value)
-        self.environment.assign(expr.name, value)
+        self.globals.assign(expr.name, value)
         return value
 
     def visit_call_expr(self, expr: expr.Call) -> object:

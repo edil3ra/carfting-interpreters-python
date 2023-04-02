@@ -28,12 +28,28 @@ class Parser:
 
     def declaration(self) -> Stmt | Expr | None:
         try:
+            if self.match(TokenType.FUN):
+                return self.function("function")
             if self.match(TokenType.VAR):
                 return self.var_declaration()
             return self.statement()
         except (ParseError):
             self.synchronize()
             return None
+
+    def function(self, kind: str) -> Stmt:
+        name = self.consume(TokenType.IDENTIFIER, f"Except {kind} name.")
+        parameters = []
+        if not self.check(TokenType.RIGHT_PAREN):
+            parameters.append(self.consume(TokenType.IDENTIFIER,"Except parameter name." ))
+            while self.match(TokenType.COMMA):
+                if len(parameters) >= 255:
+                    self.error(self.peek(), "Can't have more than 255 parameters")
+                parameters.append(self.consume(TokenType.IDENTIFIER,"Except parameter name." ))
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters")
+        self.consume(TokenType.LEFT_BRACE, f"Expect '(' before + {kind} body.")
+        body = self.block()
+        return Stmt.Function(name, parameters, body)
 
     def var_declaration(self) -> Stmt:
         name = self.consume(TokenType.IDENTIFIER, "Except variable name.")
