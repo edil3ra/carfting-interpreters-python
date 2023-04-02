@@ -5,7 +5,7 @@ from interpreter import Interpreter
 from loxCallable import LoxCallable
 
 
-class getTime(LoxCallable):
+class get_time(LoxCallable):
     def call(self, interpreter: Interpreter, argumens: List[object]):
         return time.time()
 

@@ -256,7 +256,7 @@ class Parser:
             self.current += 1
         return self.previous()
 
-    def consume(self, token: TokenType, message: str):
+    def consume(self, token: TokenType, message: str) -> Token:
         if self.check(token):
             return self.advance()
         return self.error(self.peek(), message)
